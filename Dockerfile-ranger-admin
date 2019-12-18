@@ -1,0 +1,24 @@
+FROM maven:3.5.3-jdk-8
+ADD https://jdbc.postgresql.org/download/postgresql-42.2.1.jar /opt
+ADD http://mirrors.whoishostingthis.com/apache/ranger/1.2.0/apache-ranger-1.2.0.tar.gz /opt
+
+COPY scripts/ranger-entrypoint.sh /opt
+
+WORKDIR /opt
+
+RUN apt-get -q update && apt-get install -y -q python gcc \
+ && tar zxvf apache-ranger-1.2.0.tar.gz \
+ && cd apache-ranger-1.2.0 \
+ && mvn package assembly:assembly -DskipTests \
+ && cp target/ranger-1.2.0-admin.tar.gz /opt \
+ && cd /opt \
+ && tar zxvf ranger-1.2.0-admin.tar.gz \
+ && chmod +x /opt/ranger-entrypoint.sh
+
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+ENV RANGER_HOME=/opt/ranger-1.2.0-admin
+
+COPY utils/install.properties ${RANGER_HOME}
+
+EXPOSE 6080
+ENTRYPOINT ["/opt/ranger-entrypoint.sh"]

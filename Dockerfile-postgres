@@ -1,0 +1,2 @@
+FROM postgres:11.6
+COPY scripts/create_users.sql /docker-entrypoint-initdb.d/
